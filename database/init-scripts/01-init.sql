@@ -1,9 +1,3 @@
--- Create database and user
-CREATE DATABASE ecommerce;
-
--- Create tables
-\c ecommerce;
-
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,

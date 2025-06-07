@@ -31,3 +31,7 @@ app.use((err, req, res, next) => {
 });
 
 module.exports = app;
+
+// No changes needed here. Fix the exports in your route files:
+// In each of ./routes/auth.js and ./routes/products.js, ensure you have:
+// module.exports = router;
