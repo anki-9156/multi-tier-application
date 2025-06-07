@@ -10,7 +10,7 @@ const sequelize = new Sequelize(
     dialect: 'postgres',
     logging: process.env.NODE_ENV === 'production' ? false : console.log,
     dialectOptions: {
-      ssl: process.env.NODE_ENV === 'production' ? {
+      ssl: process.env.DB_HOST && process.env.DB_HOST.includes('rds.amazonaws.com') ? {
         require: true,
         rejectUnauthorized: false
       } : false,
