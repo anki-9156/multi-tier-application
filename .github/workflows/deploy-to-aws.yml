@@ -25,7 +25,7 @@ env:
   FRONTEND_REPO: ecommerce/frontend
   BACKEND_REPO: ecommerce/backend
   DB_NAME: ecommerce
-  DB_USERNAME: admin
+  DB_USERNAME: dbadmin
 
 jobs:
   test:

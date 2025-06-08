@@ -1,0 +1,176 @@
+# Cursor Rules for DevOps Engineer
+
+## General DevOps Principles
+- Follow Infrastructure as Code (IaC) best practices
+- Implement CI/CD pipelines with proper testing stages
+- Use version control for all infrastructure and configuration files
+- Apply the principle of least privilege for all access controls
+- Document all processes and maintain runbooks
+- Implement proper monitoring, logging, and alerting
+- Follow security-first approach in all deployments
+
+## Code Style and Structure
+- Use clear, descriptive names for resources, variables, and functions
+- Comment complex logic and infrastructure decisions
+- Organize code into logical modules and reusable components
+- Use consistent indentation (2 spaces for YAML, 4 spaces for Python)
+- Follow naming conventions specific to each tool/platform
+
+## Infrastructure as Code
+- Use Terraform for cloud infrastructure provisioning
+- Implement proper state management and backend configuration
+- Use modules for reusable infrastructure components
+- Tag all cloud resources consistently
+- Use variables and locals for configuration management
+- Implement proper resource dependencies and lifecycle rules
+
+## Containerization & Orchestration
+- Write efficient, multi-stage Dockerfiles
+- Use official base images and minimize image size
+- Implement proper health checks and resource limits
+- Use Docker Compose for local development environments
+- Apply Kubernetes best practices for production deployments
+- Use proper secrets management (never hardcode secrets)
+
+## CI/CD Pipeline Guidelines
+- Implement proper branching strategies (GitFlow or GitHub Flow)
+- Use environment-specific configurations
+- Implement automated testing at multiple stages
+- Use proper artifact management and versioning
+- Implement rollback strategies and blue-green deployments
+- Use pipeline as code (GitHub Actions, GitLab CI, Jenkins)
+
+## Cloud Platform Best Practices
+### AWS
+- Use IAM roles and policies properly
+- Implement proper VPC design with security groups
+- Use managed services when possible (RDS, EKS, Lambda)
+- Implement proper backup and disaster recovery
+- Use CloudFormation or Terraform for infrastructure
+
+### Azure
+- Use Azure Resource Manager templates or Bicep
+- Implement proper RBAC and Azure AD integration
+- Use Azure DevOps for CI/CD pipelines
+- Leverage Azure Monitor and Application Insights
+
+### Google Cloud
+- Use Cloud Deployment Manager or Terraform
+- Implement proper IAM and service accounts
+- Use Google Cloud Build for CI/CD
+- Leverage Cloud Monitoring and Cloud Logging
+
+## Monitoring and Observability
+- Implement comprehensive logging strategy
+- Use structured logging (JSON format)
+- Set up proper metrics collection and dashboards
+- Implement alerting with proper escalation policies
+- Use distributed tracing for microservices
+- Monitor infrastructure, application, and business metrics
+
+## Security Best Practices
+- Implement network security with proper firewall rules
+- Use secrets management tools (HashiCorp Vault, AWS Secrets Manager)
+- Implement proper certificate management
+- Use security scanning tools in CI/CD pipelines
+- Apply principle of least privilege for all access
+- Implement proper backup and encryption strategies
+
+## Database Management
+- Use managed database services when possible
+- Implement proper backup and recovery strategies
+- Use database migrations for schema changes
+- Implement proper connection pooling and monitoring
+- Use read replicas for scaling read operations
+- Implement proper database security and access controls
+
+## Configuration Management
+- Use configuration management tools (Ansible, Puppet, Chef)
+- Keep configurations in version control
+- Use environment-specific configuration files
+- Implement proper secrets management
+- Use configuration templates and variables
+
+## Scripting and Automation
+- Write idempotent scripts and automation
+- Use proper error handling and logging
+- Implement proper input validation
+- Use version control for all scripts
+- Document script usage and dependencies
+- Prefer declarative over imperative approaches
+
+## Performance and Scalability
+- Implement auto-scaling policies
+- Use load balancers and CDNs appropriately
+- Monitor resource utilization and costs
+- Implement caching strategies
+- Use performance testing in CI/CD pipelines
+- Optimize for cost and performance
+
+## Disaster Recovery and Business Continuity
+- Implement proper backup strategies
+- Test disaster recovery procedures regularly
+- Document recovery time objectives (RTO) and recovery point objectives (RPO)
+- Implement cross-region redundancy where necessary
+- Use infrastructure automation for quick recovery
+
+## Documentation and Communication
+- Maintain up-to-date documentation
+- Create runbooks for common operations
+- Document architecture decisions and rationale
+- Use diagrams for complex systems
+- Maintain incident response procedures
+- Create troubleshooting guides
+
+## Tools and Technologies Focus
+- Containerization: Docker, Podman, containerd
+- Orchestration: Kubernetes, Docker Swarm, ECS
+- CI/CD: GitHub Actions, GitLab CI, Jenkins, Azure DevOps
+- Infrastructure: Terraform, CloudFormation, Ansible, Pulumi
+- Monitoring: Prometheus, Grafana, ELK Stack, Datadog, New Relic
+- Cloud: AWS, Azure, Google Cloud Platform
+- Version Control: Git, GitHub, GitLab, Bitbucket
+- Scripting: Bash, Python, PowerShell, Go
+- Security: HashiCorp Vault, AWS IAM, Azure AD, RBAC
+
+## File Organization
+- Keep infrastructure code in dedicated directories
+- Separate environments (dev, staging, prod)
+- Use consistent directory structure across projects
+- Keep scripts and utilities in dedicated folders
+- Maintain proper .gitignore files
+- Use meaningful commit messages and PR descriptions
+
+## Testing and Quality Assurance
+- Implement infrastructure testing (Terratest, InSpec)
+- Use linting tools for code quality
+- Implement security scanning in pipelines
+- Use automated testing for configuration management
+- Implement proper code review processes
+- Use static code analysis tools
+
+## Cost Optimization
+- Implement cost monitoring and alerting
+- Use appropriate instance types and sizes
+- Implement auto-scaling to optimize costs
+- Use spot instances where appropriate
+- Regular cost reviews and optimization
+- Tag resources for cost tracking
+
+## Incident Response
+- Maintain incident response procedures
+- Implement proper logging and monitoring
+- Use automated incident detection
+- Maintain communication channels
+- Conduct post-incident reviews
+- Document lessons learned
+
+When writing code or configurations, always consider:
+1. Security implications
+2. Scalability requirements
+3. Maintainability and readability
+4. Cost implications
+5. Performance impact
+6. Disaster recovery needs
+7. Compliance requirements
+8. Documentation needs 

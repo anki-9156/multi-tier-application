@@ -83,7 +83,7 @@ env:
   FRONTEND_REPO: ecommerce/frontend
   BACKEND_REPO: ecommerce/backend
   DB_NAME: ecommerce
-  DB_USERNAME: admin
+  DB_USERNAME: dbadmin
 ```
 
 You can modify these in `.github/workflows/deploy-to-aws.yml` if needed.
@@ -281,4 +281,4 @@ For issues with the pipeline:
 
 Remember to test the pipeline in a development environment before deploying to production! 
 
-check
+check chages of error code 1
