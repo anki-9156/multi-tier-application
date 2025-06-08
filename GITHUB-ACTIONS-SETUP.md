@@ -280,3 +280,5 @@ For issues with the pipeline:
 4. Check application-specific logs in CloudWatch
 
 Remember to test the pipeline in a development environment before deploying to production! 
+
+check
