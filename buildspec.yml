@@ -29,16 +29,12 @@ phases:
     commands:
       - echo Build phase started on `date`
       - echo Building Docker images...
-      
-      # Build backend image
       - echo Building backend Docker image...
       - cd backend
       - docker build -t $BACKEND_REPO:$CODEBUILD_BUILD_NUMBER .
       - docker tag $BACKEND_REPO:$CODEBUILD_BUILD_NUMBER $ECR_REGISTRY/$BACKEND_REPO:$CODEBUILD_BUILD_NUMBER
       - docker tag $BACKEND_REPO:$CODEBUILD_BUILD_NUMBER $ECR_REGISTRY/$BACKEND_REPO:latest
       - cd ..
-      
-      # Build frontend image
       - echo Building frontend Docker image...
       - cd frontend
       - docker build -t $FRONTEND_REPO:$CODEBUILD_BUILD_NUMBER .
@@ -50,35 +46,27 @@ phases:
     commands:
       - echo Build completed on `date`
       - echo Pushing Docker images to ECR...
-      
-      # Push backend image
       - docker push $ECR_REGISTRY/$BACKEND_REPO:$CODEBUILD_BUILD_NUMBER
       - docker push $ECR_REGISTRY/$BACKEND_REPO:latest
-      
-      # Push frontend image
       - docker push $ECR_REGISTRY/$FRONTEND_REPO:$CODEBUILD_BUILD_NUMBER
       - docker push $ECR_REGISTRY/$FRONTEND_REPO:latest
-      
       - echo Deploy phase starting...
       - echo Deploying infrastructure...
       - chmod +x scripts/deploy-infrastructure.sh
       - ./scripts/deploy-infrastructure.sh
-      
       - echo Deploying database...
       - chmod +x scripts/deploy-database.sh
       - ./scripts/deploy-database.sh
-      
       - echo Deploying ECS services...
       - chmod +x scripts/deploy-ecs.sh
       - export ECR_REGISTRY=$ECR_REGISTRY
       - export AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
       - ./scripts/deploy-ecs.sh
-      
       - echo Deployment completed successfully!
       - ALB_DNS=$(aws elbv2 describe-load-balancers --names ecommerce-alb --query 'LoadBalancers[0].DNSName' --output text)
-      - echo "Application URL: http://$ALB_DNS"
-      - echo "Backend API: http://$ALB_DNS:5000"
-      - echo "Health Check: http://$ALB_DNS:5000/health"
+      - echo "Application URL= http://$ALB_DNS"
+      - echo "Backend API= http://$ALB_DNS:5000"
+      - echo "Health Check= http://$ALB_DNS:5000/health"
 
 artifacts:
   files:
