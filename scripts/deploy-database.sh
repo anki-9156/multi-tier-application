@@ -26,11 +26,15 @@ DB_STATUS=$(aws rds describe-db-instances --db-instance-identifier $DB_IDENTIFIE
 
 if [ "$DB_STATUS" = "not-found" ]; then
     echo "Creating RDS PostgreSQL database..."
+    # Get the latest available PostgreSQL version
+    POSTGRES_VERSION=$(aws rds describe-db-engine-versions --engine postgres --default-only --query 'DBEngineVersions[0].EngineVersion' --output text)
+    echo "Using PostgreSQL version: $POSTGRES_VERSION"
+    
     aws rds create-db-instance \
         --db-instance-identifier $DB_IDENTIFIER \
         --db-instance-class db.t3.micro \
         --engine postgres \
-        --engine-version 13.13 \
+        --engine-version $POSTGRES_VERSION \
         --master-username $DB_USERNAME \
         --master-user-password $DB_PASSWORD \
         --allocated-storage 20 \
