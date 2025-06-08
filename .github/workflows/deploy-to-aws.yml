@@ -236,6 +236,12 @@ jobs:
           ECR_REGISTRY: ${{ steps.account.outputs.account-id }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ECS_CLUSTER: ${{ env.ECS_CLUSTER }}
+          AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
+          FRONTEND_REPO: ${{ env.FRONTEND_REPO }}
+          BACKEND_REPO: ${{ env.BACKEND_REPO }}
+          DB_USERNAME: ${{ env.DB_USERNAME }}
+          DB_NAME: ${{ env.DB_NAME }}
           VPC_ID: ${{ needs.deploy-infrastructure.outputs.vpc-id }}
           SG_ID: ${{ needs.deploy-infrastructure.outputs.sg-id }}
           ALB_ARN: ${{ needs.deploy-infrastructure.outputs.alb-arn }}
@@ -254,11 +260,23 @@ jobs:
           echo "export SUBNET_IDS='$SUBNET_IDS'" >> /tmp/aws-env.sh
           echo "export DB_ENDPOINT=$DB_ENDPOINT" >> /tmp/aws-env.sh
           echo "export DB_IDENTIFIER=database-2" >> /tmp/aws-env.sh
+          echo "export ECS_CLUSTER=$ECS_CLUSTER" >> /tmp/aws-env.sh
+          echo "export AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID" >> /tmp/aws-env.sh
+          echo "export ECR_REGISTRY=$ECR_REGISTRY" >> /tmp/aws-env.sh
+          echo "export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION" >> /tmp/aws-env.sh
+          echo "export FRONTEND_REPO=$FRONTEND_REPO" >> /tmp/aws-env.sh
+          echo "export BACKEND_REPO=$BACKEND_REPO" >> /tmp/aws-env.sh
+          echo "export DB_USERNAME=$DB_USERNAME" >> /tmp/aws-env.sh
+          echo "export DB_NAME=$DB_NAME" >> /tmp/aws-env.sh
+          echo "export DB_PASSWORD=$DB_PASSWORD" >> /tmp/aws-env.sh
+          echo "export JWT_SECRET=$JWT_SECRET" >> /tmp/aws-env.sh
           
           chmod +x scripts/deploy-ecs.sh
           ./scripts/deploy-ecs.sh
 
       - name: Wait for services to stabilize
+        env:
+          ECS_CLUSTER: ${{ env.ECS_CLUSTER }}
         run: |
           echo "Waiting for services to reach steady state..."
           aws ecs wait services-stable --cluster $ECS_CLUSTER --services ecommerce-backend-service ecommerce-frontend-service
