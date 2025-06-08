@@ -76,10 +76,9 @@ aws iam get-role --role-name $TASK_ROLE_NAME >/dev/null 2>&1 || {
             ]
         }'
     
-    # Attach basic ECS task permissions
-    aws iam attach-role-policy \
-        --role-name $TASK_ROLE_NAME \
-        --policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskRolePolicy
+    # Note: No additional policies needed for basic web application
+    # Add policies here if your application needs to access other AWS services
+    echo "✅ ECS task role created successfully"
 }
 
 EXECUTION_ROLE_ARN="arn:aws:iam::$AWS_ACCOUNT_ID:role/$EXECUTION_ROLE_NAME"
