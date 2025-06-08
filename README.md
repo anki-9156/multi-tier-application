@@ -41,27 +41,41 @@ docker-compose down
 
 ## CI/CD Pipeline
 
-### GitHub Actions Deployment
-A complete GitHub Actions CI/CD pipeline automatically deploys your application to AWS:
+### AWS CodePipeline Deployment (Recommended)
+A native AWS CI/CD pipeline for automated deployment:
 
 **Features:**
-- Automated testing for frontend and backend
-- Docker image building and ECR deployment
+- Native AWS integration with IAM roles
+- Automated Docker image building and ECR deployment
 - Infrastructure deployment (VPC, ALB, Security Groups)
 - Database deployment (RDS PostgreSQL)
 - ECS service deployment with Fargate
-- Integration testing and health checks
-- Deployment notifications and summaries
+- Secure secrets management with Parameter Store
+- CloudWatch integration for monitoring
 
 **Setup:**
-- See [GITHUB-ACTIONS-QUICK-START.md](GITHUB-ACTIONS-QUICK-START.md) for quick setup
-- See [GITHUB-ACTIONS-SETUP.md](GITHUB-ACTIONS-SETUP.md) for detailed instructions
+- See [AWS-CODEPIPELINE-SETUP.md](AWS-CODEPIPELINE-SETUP.md) for complete guide
+- Requires GitHub token and AWS CLI setup
+- Uses CloudFormation for infrastructure as code
 
 **Triggers:**
-- Push to `main` branch: Full deployment to production
-- Push to `develop` branch: Build and push images only
-- Pull requests: Run tests only
-- Manual deployment: Use GitHub Actions workflow dispatch
+- Push to `aws-code-pipeline` branch: Automatic deployment
+- Manual trigger via AWS Console
+- Webhook integration with GitHub
+
+### GitHub Actions Cleanup
+A GitHub Actions workflow for resource cleanup:
+
+**Features:**
+- Manual resource deletion to save costs (~$100-150/month)
+- Safe confirmation required (type "DELETE")
+- Cleans up ECS, RDS, VPC, and all AWS resources
+- Optional ECR cleanup
+
+**Setup:**
+- See [CLEANUP-GUIDE.md](CLEANUP-GUIDE.md) for usage instructions
+- Available in GitHub Actions tab
+- Perfect for development environments
 
 ## Deployment
 Can be deployed to AWS ECS with ECR for container registry, or other cloud platforms through the CI/CD pipeline.
@@ -72,3 +86,17 @@ Can be deployed to AWS ECS with ECR for container registry, or other cloud platf
 - **Database**: PostgreSQL
 - **Containerization**: Docker, Docker Compose
 - **Cloud**: AWS ECS, ECR, RDS, ALB 
+
+## 🚀 Quick Start
+
+This application is configured for automated deployment using **AWS CodePipeline**. 
+
+### AWS CodePipeline Deployment
+
+The application automatically deploys to AWS using CodePipeline when changes are pushed to the `aws-code-pipeline` branch.
+
+**Architecture**: GitHub → CodePipeline → CodeBuild → ECR/ECS/RDS
+
+**Setup Guide**: See [AWS-CODEPIPELINE-SETUP.md](AWS-CODEPIPELINE-SETUP.md)
+
+**Deployment Status**: Ready for production deployment ✅ 
