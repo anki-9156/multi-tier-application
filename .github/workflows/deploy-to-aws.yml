@@ -119,6 +119,12 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     outputs:
       alb-dns: ${{ steps.deploy-infra.outputs.alb-dns }}
+      vpc-id: ${{ steps.deploy-infra.outputs.vpc-id }}
+      sg-id: ${{ steps.deploy-infra.outputs.sg-id }}
+      alb-arn: ${{ steps.deploy-infra.outputs.alb-arn }}
+      frontend-tg-arn: ${{ steps.deploy-infra.outputs.frontend-tg-arn }}
+      backend-tg-arn: ${{ steps.deploy-infra.outputs.backend-tg-arn }}
+      subnet-ids: ${{ steps.deploy-infra.outputs.subnet-ids }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -140,12 +146,23 @@ jobs:
           ALB_DNS=$(aws elbv2 describe-load-balancers --names ecommerce-alb --query 'LoadBalancers[0].DNSName' --output text)
           echo "alb-dns=$ALB_DNS" >> $GITHUB_OUTPUT
           echo "ALB DNS: $ALB_DNS"
+          
+          # Export all infrastructure variables as outputs
+          source /tmp/aws-env.sh
+          echo "vpc-id=$VPC_ID" >> $GITHUB_OUTPUT
+          echo "sg-id=$SG_ID" >> $GITHUB_OUTPUT
+          echo "alb-arn=$ALB_ARN" >> $GITHUB_OUTPUT
+          echo "frontend-tg-arn=$FRONTEND_TG_ARN" >> $GITHUB_OUTPUT
+          echo "backend-tg-arn=$BACKEND_TG_ARN" >> $GITHUB_OUTPUT
+          echo "subnet-ids=$SUBNET_IDS" >> $GITHUB_OUTPUT
 
   deploy-database:
     name: Deploy Database
     runs-on: ubuntu-latest
     needs: deploy-infrastructure
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    outputs:
+      db-endpoint: ${{ steps.deploy-db.outputs.db-endpoint }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -158,11 +175,25 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy database
+        id: deploy-db
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          VPC_ID: ${{ needs.deploy-infrastructure.outputs.vpc-id }}
+          SG_ID: ${{ needs.deploy-infrastructure.outputs.sg-id }}
+          SUBNET_IDS: ${{ needs.deploy-infrastructure.outputs.subnet-ids }}
         run: |
+          # Create the aws-env.sh file with infrastructure variables
+          mkdir -p /tmp
+          echo "export VPC_ID=$VPC_ID" > /tmp/aws-env.sh
+          echo "export SG_ID=$SG_ID" >> /tmp/aws-env.sh
+          echo "export SUBNET_IDS='$SUBNET_IDS'" >> /tmp/aws-env.sh
+          
           chmod +x scripts/deploy-database.sh
           ./scripts/deploy-database.sh
+          
+          # Get database endpoint for output
+          DB_ENDPOINT=$(aws rds describe-db-instances --db-instance-identifier database-2 --query 'DBInstances[0].Endpoint.Address' --output text)
+          echo "db-endpoint=$DB_ENDPOINT" >> $GITHUB_OUTPUT
 
   deploy-ecs:
     name: Deploy ECS Services
@@ -192,7 +223,25 @@ jobs:
           ECR_REGISTRY: ${{ steps.account.outputs.account-id }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          VPC_ID: ${{ needs.deploy-infrastructure.outputs.vpc-id }}
+          SG_ID: ${{ needs.deploy-infrastructure.outputs.sg-id }}
+          ALB_ARN: ${{ needs.deploy-infrastructure.outputs.alb-arn }}
+          FRONTEND_TG_ARN: ${{ needs.deploy-infrastructure.outputs.frontend-tg-arn }}
+          BACKEND_TG_ARN: ${{ needs.deploy-infrastructure.outputs.backend-tg-arn }}
+          SUBNET_IDS: ${{ needs.deploy-infrastructure.outputs.subnet-ids }}
+          DB_ENDPOINT: ${{ needs.deploy-database.outputs.db-endpoint }}
         run: |
+          # Create the aws-env.sh file with all required variables
+          mkdir -p /tmp
+          echo "export VPC_ID=$VPC_ID" > /tmp/aws-env.sh
+          echo "export SG_ID=$SG_ID" >> /tmp/aws-env.sh
+          echo "export ALB_ARN=$ALB_ARN" >> /tmp/aws-env.sh
+          echo "export FRONTEND_TG_ARN=$FRONTEND_TG_ARN" >> /tmp/aws-env.sh
+          echo "export BACKEND_TG_ARN=$BACKEND_TG_ARN" >> /tmp/aws-env.sh
+          echo "export SUBNET_IDS='$SUBNET_IDS'" >> /tmp/aws-env.sh
+          echo "export DB_ENDPOINT=$DB_ENDPOINT" >> /tmp/aws-env.sh
+          echo "export DB_IDENTIFIER=database-2" >> /tmp/aws-env.sh
+          
           chmod +x scripts/deploy-ecs.sh
           ./scripts/deploy-ecs.sh
 
