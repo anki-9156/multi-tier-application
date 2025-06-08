@@ -178,15 +178,28 @@ jobs:
         id: deploy-db
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_USERNAME: ${{ env.DB_USERNAME }}
+          DB_NAME: ${{ env.DB_NAME }}
           VPC_ID: ${{ needs.deploy-infrastructure.outputs.vpc-id }}
           SG_ID: ${{ needs.deploy-infrastructure.outputs.sg-id }}
           SUBNET_IDS: ${{ needs.deploy-infrastructure.outputs.subnet-ids }}
         run: |
-          # Create the aws-env.sh file with infrastructure variables
+          # Create the aws-env.sh file with infrastructure and database variables
           mkdir -p /tmp
           echo "export VPC_ID=$VPC_ID" > /tmp/aws-env.sh
           echo "export SG_ID=$SG_ID" >> /tmp/aws-env.sh
           echo "export SUBNET_IDS='$SUBNET_IDS'" >> /tmp/aws-env.sh
+          echo "export DB_PASSWORD=$DB_PASSWORD" >> /tmp/aws-env.sh
+          echo "export DB_USERNAME=$DB_USERNAME" >> /tmp/aws-env.sh
+          echo "export DB_NAME=$DB_NAME" >> /tmp/aws-env.sh
+          
+          # Debug: Check if DB_PASSWORD is set
+          if [ -z "$DB_PASSWORD" ]; then
+            echo "❌ ERROR: DB_PASSWORD is not set!"
+            exit 1
+          else
+            echo "✅ DB_PASSWORD is set"
+          fi
           
           chmod +x scripts/deploy-database.sh
           ./scripts/deploy-database.sh
