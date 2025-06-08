@@ -6,11 +6,32 @@ echo "🚢 Deploying ECS Services..."
 # Source infrastructure variables
 source /tmp/aws-env.sh
 
+# Debug: Show loaded variables
+echo "🔍 Variables loaded from aws-env.sh:"
+echo "ECS_CLUSTER: $ECS_CLUSTER"
+echo "AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID"
+echo "ECR_REGISTRY: $ECR_REGISTRY"
+echo "AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION"
+
 # Create ECS cluster
 echo "Creating ECS cluster..."
-aws ecs describe-clusters --clusters $ECS_CLUSTER >/dev/null 2>&1 || {
+CLUSTER_EXISTS=$(aws ecs describe-clusters --clusters $ECS_CLUSTER --query 'clusters[0].clusterName' --output text 2>/dev/null || echo "None")
+if [ "$CLUSTER_EXISTS" = "None" ]; then
+    echo "Creating new ECS cluster: $ECS_CLUSTER"
     aws ecs create-cluster --cluster-name $ECS_CLUSTER
-}
+    echo "✅ ECS cluster created successfully"
+else
+    echo "✅ ECS cluster already exists: $CLUSTER_EXISTS"
+fi
+
+# Verify cluster exists before proceeding
+echo "Verifying cluster exists..."
+CLUSTER_STATUS=$(aws ecs describe-clusters --clusters $ECS_CLUSTER --query 'clusters[0].status' --output text 2>/dev/null || echo "None")
+if [ "$CLUSTER_STATUS" != "ACTIVE" ]; then
+    echo "❌ ERROR: Cluster $ECS_CLUSTER is not in ACTIVE state. Current status: $CLUSTER_STATUS"
+    exit 1
+fi
+echo "✅ Cluster verification passed: $ECS_CLUSTER is ACTIVE"
 
 # Create task execution role if it doesn't exist
 ROLE_NAME="ecsTaskExecutionRole"
@@ -185,6 +206,19 @@ aws ecs register-task-definition --cli-input-json file:///tmp/frontend-task-def.
 # Convert subnet IDs to array format for ECS
 SUBNET_ARRAY=($SUBNET_IDS)
 SUBNETS_JSON=$(printf '"%s",' "${SUBNET_ARRAY[@]}" | sed 's/,$//')
+
+# Debug: Check all required variables before service creation
+echo "🔍 Debugging variables before service creation:"
+echo "ECS_CLUSTER: $ECS_CLUSTER"
+echo "SG_ID: $SG_ID"
+echo "SUBNET_IDS: $SUBNET_IDS"
+echo "SUBNETS_JSON: $SUBNETS_JSON"
+echo "BACKEND_TG_ARN: $BACKEND_TG_ARN"
+echo "FRONTEND_TG_ARN: $FRONTEND_TG_ARN"
+
+# Final cluster verification
+echo "🔍 Final cluster verification:"
+aws ecs describe-clusters --clusters $ECS_CLUSTER --query 'clusters[0].{Name:clusterName,Status:status,RunningTasks:runningTasksCount,ActiveServices:activeServicesCount}' --output table
 
 # Create backend service
 echo "Creating backend service..."
