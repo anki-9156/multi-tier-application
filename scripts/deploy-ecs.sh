@@ -34,11 +34,11 @@ fi
 echo "✅ Cluster verification passed: $ECS_CLUSTER is ACTIVE"
 
 # Create task execution role if it doesn't exist
-ROLE_NAME="ecsTaskExecutionRole"
-aws iam get-role --role-name $ROLE_NAME >/dev/null 2>&1 || {
+EXECUTION_ROLE_NAME="ecsTaskExecutionRole"
+aws iam get-role --role-name $EXECUTION_ROLE_NAME >/dev/null 2>&1 || {
     echo "Creating ECS task execution role..."
     aws iam create-role \
-        --role-name $ROLE_NAME \
+        --role-name $EXECUTION_ROLE_NAME \
         --assume-role-policy-document '{
             "Version": "2012-10-17",
             "Statement": [
@@ -53,11 +53,37 @@ aws iam get-role --role-name $ROLE_NAME >/dev/null 2>&1 || {
         }'
     
     aws iam attach-role-policy \
-        --role-name $ROLE_NAME \
+        --role-name $EXECUTION_ROLE_NAME \
         --policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
 }
 
-EXECUTION_ROLE_ARN="arn:aws:iam::$AWS_ACCOUNT_ID:role/$ROLE_NAME"
+# Create task role if it doesn't exist
+TASK_ROLE_NAME="ecsTaskRole"
+aws iam get-role --role-name $TASK_ROLE_NAME >/dev/null 2>&1 || {
+    echo "Creating ECS task role..."
+    aws iam create-role \
+        --role-name $TASK_ROLE_NAME \
+        --assume-role-policy-document '{
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "ecs-tasks.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }'
+    
+    # Attach basic ECS task permissions
+    aws iam attach-role-policy \
+        --role-name $TASK_ROLE_NAME \
+        --policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskRolePolicy
+}
+
+EXECUTION_ROLE_ARN="arn:aws:iam::$AWS_ACCOUNT_ID:role/$EXECUTION_ROLE_NAME"
+TASK_ROLE_ARN="arn:aws:iam::$AWS_ACCOUNT_ID:role/$TASK_ROLE_NAME"
 
 # Create backend task definition
 echo "Creating backend task definition..."
@@ -69,6 +95,7 @@ cat > /tmp/backend-task-def.json << EOF
   "cpu": "512",
   "memory": "1024",
   "executionRoleArn": "$EXECUTION_ROLE_ARN",
+  "taskRoleArn": "$TASK_ROLE_ARN",
   "runtimePlatform": {
     "cpuArchitecture": "X86_64",
     "operatingSystemFamily": "LINUX"
@@ -158,6 +185,7 @@ cat > /tmp/frontend-task-def.json << EOF
   "cpu": "512",
   "memory": "1024",
   "executionRoleArn": "$EXECUTION_ROLE_ARN",
+  "taskRoleArn": "$TASK_ROLE_ARN",
   "runtimePlatform": {
     "cpuArchitecture": "X86_64",
     "operatingSystemFamily": "LINUX"
