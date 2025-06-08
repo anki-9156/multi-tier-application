@@ -168,6 +168,22 @@ Resources:
         BuildSpec: buildspec.yml
       TimeoutInMinutes: 60
 
+  # GitHub Webhook for immediate triggering
+  GitHubWebhook:
+    Type: AWS::CodePipeline::Webhook
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: !Ref GitHubToken
+      RegisterWithThirdParty: true
+      Filters:
+        - JsonPath: "$.ref"
+          MatchEquals: !Sub "refs/heads/${GitHubBranch}"
+      TargetPipeline: !Ref CodePipeline
+      TargetAction: SourceAction
+      Name: !Sub '${AWS::StackName}-webhook'
+      TargetPipelineVersion: !GetAtt CodePipeline.Version
+
   # CodePipeline
   CodePipeline:
     Type: AWS::CodePipeline::Pipeline
@@ -191,7 +207,7 @@ Resources:
                 Repo: !Ref GitHubRepo
                 Branch: !Ref GitHubBranch
                 OAuthToken: !Ref GitHubToken
-                PollForSourceChanges: true
+                PollForSourceChanges: false
               OutputArtifacts:
                 - Name: SourceOutput
         
@@ -227,4 +243,10 @@ Outputs:
     Description: 'S3 bucket for pipeline artifacts'
     Value: !Ref CodePipelineArtifacts
     Export:
-      Name: !Sub '${AWS::StackName}-ArtifactsBucket' 
+      Name: !Sub '${AWS::StackName}-ArtifactsBucket'
+  
+  GitHubWebhookURL:
+    Description: 'GitHub webhook URL for automatic triggering'
+    Value: !GetAtt GitHubWebhook.Url
+    Export:
+      Name: !Sub '${AWS::StackName}-WebhookURL' 

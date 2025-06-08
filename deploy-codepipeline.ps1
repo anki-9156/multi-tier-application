@@ -59,6 +59,11 @@ try {
         Write-Host "📊 View builds: https://us-east-1.console.aws.amazon.com/codesuite/codebuild/" -ForegroundColor Blue
         Write-Host "📊 View ECS: https://us-east-1.console.aws.amazon.com/ecs/" -ForegroundColor Blue
         
+        Write-Host "`n🚀 Automatic Triggering Enabled!" -ForegroundColor Green
+        Write-Host "   ✅ GitHub webhook configured for instant triggering" -ForegroundColor White
+        Write-Host "   ✅ Every commit pushed to '$env:GITHUB_BRANCH' triggers deployment" -ForegroundColor White
+        Write-Host "   ✅ No more waiting - builds start immediately!" -ForegroundColor White
+        
         Write-Host "`n📝 Next steps:" -ForegroundColor Yellow
         Write-Host "   1. Monitor the first pipeline execution (~15-20 minutes)" -ForegroundColor White
         Write-Host "   2. Push code changes to trigger automatic deployments" -ForegroundColor White
