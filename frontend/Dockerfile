@@ -1,4 +1,4 @@
-FROM node:18-alpine as builder
+FROM public.ecr.aws/docker/library/node:18-alpine as builder
 
 WORKDIR /app
 
@@ -19,7 +19,7 @@ ENV REACT_APP_ENV=$REACT_APP_ENV
 
 RUN npm run build
 
-FROM nginx:alpine
+FROM public.ecr.aws/docker/library/nginx:alpine
 COPY --from=builder /app/build /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 

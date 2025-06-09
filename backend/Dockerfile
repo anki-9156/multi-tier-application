@@ -1,5 +1,5 @@
 # backend/Dockerfile
-FROM node:18
+FROM public.ecr.aws/docker/library/node:18
 
 WORKDIR /app
 
