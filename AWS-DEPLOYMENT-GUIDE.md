@@ -100,7 +100,6 @@ docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/ecommerce/backend:
    - VPC security groups: Create new (allow PostgreSQL port 5432)
    - Database name: `ecommerce`
 
-4. **Click "Create database"**
 
 ### Step 4: Configure Security Groups
 
