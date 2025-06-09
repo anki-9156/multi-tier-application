@@ -114,6 +114,9 @@ Resources:
                   - ecr:UploadLayerPart
                   - ecr:CompleteLayerUpload
                   - ecr:PutImage
+                  - ecr:PutLifecyclePolicy
+                  - ecr:GetLifecyclePolicy
+                  - ecr:DeleteLifecyclePolicy
                 Resource: '*'
               - Effect: Allow
                 Action:
