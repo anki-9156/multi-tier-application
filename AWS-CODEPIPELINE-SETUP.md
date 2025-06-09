@@ -194,7 +194,42 @@ Modify `buildspec.yml` to use ECS blue/green deployment:
 - Clean up old artifacts regularly
 - Use the cleanup workflow to delete resources when not needed
 
-## ❓ **Troubleshooting**
+## 🔧 **Troubleshooting**
+
+### **Pipeline Not Triggering Automatically:**
+
+If your pipeline doesn't trigger automatically on commits:
+
+1. **Check Webhook Status:**
+```bash
+# List webhooks for your pipeline
+aws codepipeline list-webhooks --region us-east-1
+
+# Check GitHub webhooks in your repository
+# Go to: https://github.com/your-username/your-repo/settings/hooks
+```
+
+2. **Manual Webhook Setup:**
+If the automatic webhook creation fails, run:
+```bash
+# Set environment variables
+export GITHUB_TOKEN="your_token_here"
+export GITHUB_OWNER="your-github-username"  
+export GITHUB_REPO="multi-tier-application"
+
+# Run webhook setup script
+chmod +x scripts/setup-webhook.sh
+./scripts/setup-webhook.sh
+```
+
+3. **Manual GitHub Webhook Configuration:**
+- Go to your GitHub repository → Settings → Webhooks
+- Click "Add webhook"
+- Get webhook URL from AWS Console → CodePipeline → Your Pipeline → Settings
+- Set payload URL to the webhook URL
+- Content type: `application/json`
+- Secret: Your GitHub token
+- Events: Select "Just the push event"
 
 ### **Pipeline Fails at Source:**
 - Verify GitHub token has correct permissions

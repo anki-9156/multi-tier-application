@@ -168,22 +168,6 @@ Resources:
         BuildSpec: buildspec.yml
       TimeoutInMinutes: 60
 
-  # GitHub Webhook for immediate triggering
-  GitHubWebhook:
-    Type: AWS::CodePipeline::Webhook
-    Properties:
-      Authentication: GITHUB_HMAC
-      AuthenticationConfiguration:
-        SecretToken: !Ref GitHubToken
-      RegisterWithThirdParty: true
-      Filters:
-        - JsonPath: "$.ref"
-          MatchEquals: !Sub "refs/heads/${GitHubBranch}"
-      TargetPipeline: !Ref CodePipeline
-      TargetAction: SourceAction
-      Name: !Sub '${AWS::StackName}-webhook'
-      TargetPipelineVersion: !GetAtt CodePipeline.Version
-
   # CodePipeline
   CodePipeline:
     Type: AWS::CodePipeline::Pipeline
@@ -225,6 +209,21 @@ Resources:
                 - Name: SourceOutput
               OutputArtifacts:
                 - Name: BuildOutput
+
+  # GitHub Webhook for automatic triggering
+  GitHubWebhook:
+    Type: AWS::CodePipeline::Webhook
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: !Ref GitHubToken
+      RegisterWithThirdParty: true
+      Filters:
+        - JsonPath: "$.ref"
+          MatchEquals: !Sub "refs/heads/${GitHubBranch}"
+      TargetPipeline: !Ref CodePipeline
+      TargetAction: SourceAction
+      TargetPipelineVersion: !GetAtt CodePipeline.Version
 
 Outputs:
   PipelineName:
