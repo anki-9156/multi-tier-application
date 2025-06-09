@@ -16,6 +16,8 @@ echo "AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION"
 # Create ECS cluster with FARGATE capacity provider
 echo "Creating ECS cluster..."
 CLUSTER_EXISTS=$(aws ecs describe-clusters --clusters $ECS_CLUSTER --query 'clusters[0].clusterName' --output text 2>/dev/null || echo "None")
+CLUSTER_STATUS=$(aws ecs describe-clusters --clusters $ECS_CLUSTER --query 'clusters[0].status' --output text 2>/dev/null || echo "None")
+
 if [ "$CLUSTER_EXISTS" = "None" ]; then
     echo "Creating new ECS cluster: $ECS_CLUSTER"
     aws ecs create-cluster \
@@ -23,9 +25,45 @@ if [ "$CLUSTER_EXISTS" = "None" ]; then
         --capacity-providers FARGATE FARGATE_SPOT \
         --default-capacity-provider-strategy capacityProvider=FARGATE,weight=1,base=1
     echo "✅ ECS cluster created successfully with FARGATE capacity provider"
+elif [ "$CLUSTER_STATUS" = "INACTIVE" ]; then
+    echo "⚠️ Found INACTIVE cluster. Deleting and recreating with proper capacity providers..."
+    
+    # First, ensure no services are running
+    echo "Checking for existing services..."
+    SERVICES=$(aws ecs list-services --cluster $ECS_CLUSTER --query 'serviceArns' --output text 2>/dev/null || echo "")
+    if [ ! -z "$SERVICES" ] && [ "$SERVICES" != "None" ]; then
+        echo "Found existing services. Scaling them down first..."
+        for service in $SERVICES; do
+            SERVICE_NAME=$(basename $service)
+            aws ecs update-service --cluster $ECS_CLUSTER --service $SERVICE_NAME --desired-count 0 >/dev/null 2>&1 || true
+        done
+        echo "Waiting for services to scale down..."
+        sleep 30
+        
+        # Delete services
+        for service in $SERVICES; do
+            SERVICE_NAME=$(basename $service)
+            aws ecs delete-service --cluster $ECS_CLUSTER --service $SERVICE_NAME >/dev/null 2>&1 || true
+        done
+        echo "Waiting for services to be deleted..."
+        sleep 30
+    fi
+    
+    # Delete the INACTIVE cluster
+    echo "Deleting INACTIVE cluster..."
+    aws ecs delete-cluster --cluster $ECS_CLUSTER >/dev/null 2>&1 || echo "Cluster deletion may have failed, but continuing..."
+    sleep 10
+    
+    # Create new cluster with proper capacity providers
+    echo "Creating new ECS cluster with FARGATE capacity providers..."
+    aws ecs create-cluster \
+        --cluster-name $ECS_CLUSTER \
+        --capacity-providers FARGATE FARGATE_SPOT \
+        --default-capacity-provider-strategy capacityProvider=FARGATE,weight=1,base=1
+    echo "✅ ECS cluster recreated successfully with FARGATE capacity provider"
 else
     echo "✅ ECS cluster already exists: $CLUSTER_EXISTS"
-    # Ensure FARGATE capacity provider is attached to existing cluster
+    # For ACTIVE clusters, ensure capacity providers are configured
     echo "Ensuring FARGATE capacity provider is configured..."
     aws ecs put-cluster-capacity-providers \
         --cluster $ECS_CLUSTER \
@@ -36,15 +74,15 @@ fi
 
 # Wait a moment for cluster to become active
 echo "Waiting for cluster to be fully active..."
-sleep 10
+sleep 15
 
 # Verify cluster exists before proceeding
 echo "Verifying cluster exists..."
 CLUSTER_STATUS=$(aws ecs describe-clusters --clusters $ECS_CLUSTER --query 'clusters[0].status' --output text 2>/dev/null || echo "None")
 if [ "$CLUSTER_STATUS" != "ACTIVE" ]; then
-    echo "❌ WARNING: Cluster $ECS_CLUSTER status: $CLUSTER_STATUS"
-    echo "Proceeding anyway as this might be a temporary state..."
-    # Don't exit, just warn - sometimes clusters work even when not showing ACTIVE immediately
+    echo "❌ ERROR: Cluster $ECS_CLUSTER is still not ACTIVE. Current status: $CLUSTER_STATUS"
+    echo "This indicates a fundamental issue with cluster creation. Exiting..."
+    exit 1
 else
     echo "✅ Cluster verification passed: $ECS_CLUSTER is ACTIVE"
 fi
